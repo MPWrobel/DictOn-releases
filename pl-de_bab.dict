@@ -1,0 +1,20 @@
+const index = require(require('electron').remote.getGlobal('appPath') + '/js/index.js');
+index.setFlags('<i class="em em-pl"></i>\n<i class="em em-de"></i>')
+exports.check = function(phrase) {
+    request('http://pl.bab.la/slownik/polski-niemiecki/' + encodeURI(phrase), function(err, resp, html) {
+	if(err!=null)
+            index.showResult('<br>'+err)
+            $ = cheerio.load(html)
+            let output = ''
+            $('div.quick-result-entry', $('div.content').first()).each(function(i, el) {
+                output += '<p><b>' + $('div.quick-result-option', el).text() + '</b><br>'
+                $('a', 'ul.sense-group-results', el).each(function(i, el) {
+                    output += $(this).text() + ', '
+                })
+                output = output.substring(0, output.length - 2) + '</p>';
+            })
+            if ($('div.quick-result-overview').text().includes('Nasz zesp'))
+                output = '<br>Brak tłumaczenia'
+            index.showResult(output)
+    })
+}
